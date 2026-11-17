@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {api} from '../worker/api.js';
+const items=new Map();
+const BUCKET={async put(key,body,metadata){items.set(key,{key,body,...metadata,uploaded:new Date()});},async get(key){return items.get(key);},async delete(key){items.delete(key);},async list(){return {objects:[...items.values()],truncated:false};}};
+const env={BUCKET};
+const call=(path,init)=>api(new Request('https://test.local'+path,init),env);
+const image=Uint8Array.from([137,80,78,71,13,10,26,10]);
+const form=new FormData();form.set('title','Test <title>');form.set('description','A description');form.set('file',new Blob([image],{type:'image/png'}),'test.png');
+const upload=await call('/api/upload',{method:'POST',body:form});assert.equal(upload.status,201);const post=await upload.json();
+assert.equal((await (await call('/api/upload')).json()).posts[0].title,'Test <title>');
+const media=await call(post.imageUrl);assert.equal(media.status,200);assert.deepEqual(new Uint8Array(await media.arrayBuffer()),image);
+assert.equal((await call('/api/upload/'+post._id,{method:'DELETE'})).status,200);
+assert.equal((await call(post.imageUrl)).status,404);
+assert.equal((await (await call('/api/upload')).json()).posts.length,0);
+assert.equal((await call('/api/upload',{method:'POST',body:new FormData()})).status,400);
+form.set('file',new Blob(['fake png'],{type:'image/png'}),'bad.png');assert.equal((await call('/api/upload',{method:'POST',body:form})).status,400);
+console.log('PASS: upload, listing, image bytes, delete, missing file and invalid image validation.');
