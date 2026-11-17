@@ -1,73 +1,34 @@
-# React + TypeScript + Vite
+# YapUp
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A college community application with a private campus space and a separate global space for verified members.
 
-Currently, two official plugins are available:
+## Working features
+- College directory and college-account email matching
+- Optional college-email OTP through Resend
+- Campus/global feeds, image posts, likes, comments and reports
+- Meetups with atomic capacity-limited RSVP and host cancellation
+- Clubs, memberships, private club channels, and campus/global chat
+- Profiles, people directory and comment notifications
+- D1 records, R2 image storage, server-side campus and author authorization
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Authentication
+Sites provides sign-in and authenticated identity headers. An existing college-email account can join its matching college directly. The alternative OTP flow requires `RESEND_API_KEY` and `EMAIL_FROM` in Sites runtime secrets. No OTP is sent or simulated when those are missing. College catalog is in `worker/community-api.js`.
 
-## React Compiler
+## Development
+`npm ci`
+`node scripts/test-community.mjs`
+`npm run build`
+`node scripts/preview.mjs`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Preview binds only to 127.0.0.1:4173 and uses disposable in-memory sample users and records. The preview identity adapter is not included in the hosted Worker. Production does not contain sample posts or members.
 
-## Expanding the ESLint configuration
+## Storage and deployment
+The tracked `.openai/hosting.json` declares D1 `DB` and R2 `BUCKET`. Drizzle-generated SQL is in `drizzle/`. Append future migrations; do not edit applied migrations. The build embeds Vite assets and backend code in `dist/server/index.js`. Publish through the Sites source/package workflow.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Current boundaries
+- Chat polls every 4 seconds; it is not WebSocket-based.
+- Feed/event/club lists show up to 100 entries; messages show the latest 100; directory shows up to 200 people.
+- Reports are stored for operator review; no automated moderation or review console yet.
+- College email possession does not prove current enrollment or exclude alumni/faculty.
+- No direct messages, video calls, or push notifications are included.
+- Original Krash R2 data is retained, but is not assigned to a verified college and is not exposed in YapUp feeds.
