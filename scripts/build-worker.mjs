@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync,mkdirSync,readdirSync} from 'node:fs';
 import {join,extname} from 'node:path';
 const assets = {};
-const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'};
+const mime = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg'};
 function collect(dir, prefix='') { for (const entry of readdirSync(dir,{withFileTypes:true})) { const p=join(dir,entry.name), key=prefix+'/'+entry.name; if(entry.isDirectory()) collect(p,key); else assets[key]={body:readFileSync(p).toString('base64'),type:mime[extname(p)]||'application/octet-stream'}; } }
 collect('dist/client');
 mkdirSync('dist/server',{recursive:true});
